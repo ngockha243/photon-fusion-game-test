@@ -1,3 +1,4 @@
+using System;
 using Fusion;
 using Fusion.Addons.Physics;
 using UnityEngine;
@@ -14,6 +15,8 @@ public class PlayerMovement : NetworkBehaviour
     private Vector3 moveInput;
     private bool jumpPressed;
     private bool sprintPressed;
+
+    private Vector3 moveDirection;
 
     private void Awake()
     {
@@ -37,12 +40,21 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
+    private void FixedUpdate()
+    {
+        if (!HasStateAuthority) return;
+        if (moveDirection.magnitude > 0.1f)
+        {
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveDirection), 0.1f);
+        }
+    }
+
     public override void FixedUpdateNetwork()
     {
         if (!HasStateAuthority) return;
 
         Quaternion cameraRotationY = Quaternion.Euler(0, Camera.transform.rotation.eulerAngles.y, 0);
-        Vector3 moveDirection = cameraRotationY * moveInput * (sprintPressed ? SprintSpeedScale : 1f);
+        moveDirection = cameraRotationY * moveInput * (sprintPressed ? SprintSpeedScale : 1f);
 
         rb.velocity = new Vector3(moveDirection.x * PlayerSpeed, rb.velocity.y, moveDirection.z * PlayerSpeed);
 
@@ -51,10 +63,10 @@ public class PlayerMovement : NetworkBehaviour
             rb.velocity = new Vector3(rb.velocity.x, JumpForce, rb.velocity.z);
         }
 
-        if (moveDirection.magnitude > 0.1f)
-        {
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveDirection), 0.1f);
-        }
+        // if (moveDirection.magnitude > 0.1f)
+        // {
+        //     transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveDirection), 0.1f);
+        // }
 
         jumpPressed = false;
         sprintPressed = false;

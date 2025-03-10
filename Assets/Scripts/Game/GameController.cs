@@ -13,6 +13,9 @@ public class GameController : ManualSingletonMono<GameController>
     {
         mainCanvas.SetActive(true);
         currentPlayerApperance = apperance;
+        string randomName = $"Player {UnityEngine.Random.Range(0, 100)}";
+        inputName.text = randomName;
+        Submit();
     }
     public void Submit()
     {
